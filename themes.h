@@ -6,6 +6,7 @@
 
 extern ImVec4 gBackgroundColor;
 extern ImVec4 gNoteColor;
+extern ImVec4 gNoteNameColor;
 
 extern std::string currentFont;
 extern std::string currentTheme;

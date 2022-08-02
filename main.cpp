@@ -59,6 +59,8 @@ std::string currentTheme;
 
 ImVec4 gBackgroundColor; // not settings, theme props
 ImVec4 gNoteColor;
+// removed static cause extern
+ImVec4 gNoteNameColor; // load this
 
 static int showTitlebar = 1;
 static int windowOpacity = 100;
@@ -66,7 +68,6 @@ static int windowsEditable = 0;
 
 static int smallLayout = 0;
 
-static ImVec4 midiNoteNamesColor;
 
 static int alwaysontop = 1;
 
@@ -138,7 +139,6 @@ void resetSettings() {
     windowOpacity = 100;
     windowsEditable = false;
 
-    midiNoteNamesColor = ImVec4(1.0f, 1.0f, 0.0f, 1.0f);
     currentTheme = "default";
     defaultTheme = "themes/default.theme";
     logStuff = true;
@@ -333,7 +333,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             ImGui::Text("Playing: ");
             ImGui::SameLine();
             if (!playing.empty()) {
-                ImGui::TextColored(midiNoteNamesColor, "%s", playing.c_str());
+                ImGui::TextColored(gNoteNameColor, "%s", playing.c_str());
             } else {
                 ImGui::Text("");
             }
@@ -376,7 +376,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
             gBackgroundColor    = normalizedRainbow;
             gNoteColor          = normalizedRainbow;
-            midiNoteNamesColor  = normalizedRainbow;
+            gNoteNameColor      = normalizedRainbow;
         }
 
         if (show_piano_window) {

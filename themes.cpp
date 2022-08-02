@@ -124,6 +124,9 @@ int LoadTheme(std::string path) {
     gNoteColor       = style.Colors[ImGuiCol_SliderGrab];
     printf("gNoteColor set to %.2f, %.2f, %.2f, %.2f\n", gNoteColor.x, gNoteColor.y, gNoteColor.z, gNoteColor.w);
 
+    gNoteNameColor   = style.Colors[ImGuiCol_Text];
+    printf("midiNoteNamesColor set to %.2f, %.2f, %.2f, %.2f\n", gNoteNameColor.x, gNoteNameColor.y, gNoteNameColor.z, gNoteNameColor.w);
+
     fclose(fp);
 
     return 0;
