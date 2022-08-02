@@ -2,8 +2,10 @@
 
 Thanks to: 
 
-https://github.com/ocornut/imgui  - for the awesome ..IMGUI library
+https://github.com/ocornut/imgui             - for the awesome ..IMGUI library
 
-https://github.com/shric/midi     - for the cool piano visualization library
+https://github.com/shric/midi                - for the cool piano visualization library
 
-portMidi                          - for their MIDI I/O library
+portMidi                                     - for their MIDI I/O library
+
+https://github.com/monkeytypegame/monkeytype - for "inspiration" on the themes
