@@ -1,0 +1,9 @@
+GL/
+KHR/
+MinSizeRel/
+x64/
+*.aps
+*.rc
+*.filters
+*.vcxproj
+*.user
