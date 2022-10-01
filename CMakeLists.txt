@@ -2,7 +2,10 @@ cmake_minimum_required(VERSION 3.20)
 project(miditoqwerty)
 
 find_package(SDL2 REQUIRED)
-include_directories(SDL2Test ${SDL2_INCLUDE_DIRS})
+include_directories(${SDL2_INCLUDE_DIRS})
+
+find_package(PortMidi REQUIRED)
+include_directories(${PORTMIDI_INCLUDE_DIR})
 
 # add_subdirectory(fmt)
 
