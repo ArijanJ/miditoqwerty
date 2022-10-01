@@ -1,9 +1,11 @@
-GL/
-KHR/
-MinSizeRel/
-x64/
+portmidi/
+imgui/
+gl3w/
+
 *.aps
 *.rc
 *.filters
 *.vcxproj
 *.user
+
+build/
