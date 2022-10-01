@@ -4,3 +4,6 @@
 [submodule "portmidi"]
 	path = portmidi
 	url = https://github.com/PortMidi/portmidi
+[submodule "fmt"]
+	path = fmt
+	url = https://github.com/fmtlib/fmt

@@ -7,10 +7,10 @@ include_directories(${SDL2_INCLUDE_DIRS})
 find_package(PortMidi REQUIRED)
 include_directories(${PORTMIDI_INCLUDE_DIR})
 
-# add_subdirectory(fmt)
+add_subdirectory(fmt)
 
 add_executable(miditoqwerty
     src/main.cpp
 )
 target_include_directories(miditoqwerty PRIVATE src imgui imgui/backends)
-# target_link_libraries(miditoqwerty fmt)
+target_link_libraries(miditoqwerty fmt)
