@@ -1,7 +1,3 @@
-portmidi/
-imgui/
-gl3w/
-
 *.aps
 *.rc
 *.filters
