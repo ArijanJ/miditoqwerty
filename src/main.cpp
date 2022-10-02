@@ -454,7 +454,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
             ImGui::Text("Piano settings");
 
-            ImGui::Checkbox("Enable output", (bool*)& enableOutput);
+            if (ImGui::Checkbox("Enable output", (bool*)&enableOutput)) {
+                // Clear all notes
+                for (int i = 21; i <= 108; i++)
+                    piano.up(i);
+            }
 
             ImGui::Checkbox("88-key support", (bool*)& eightyeightkey);
 
