@@ -30,3 +30,4 @@ To build this project, you will need:
 | SDL2_DIR| SDL2-x.x.xx/|
 
 Build as Release to avoid some `imgui` asserts.
+Remember, you still need the DLLs, /themes/ etc. from the release.
