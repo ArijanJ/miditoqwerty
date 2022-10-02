@@ -25,7 +25,12 @@
 #include "GL/gl3w.h"            // Initialize with gl3wInit()
 #include <sstream>
 
-#define POSSIBLYEDITABLE (!windowsEditable ? ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse : ImGuiWindowFlags_None)
+#define POSSIBLYEDITABLE (ImGuiWindowFlags_NoBringToFrontOnFocus | (!windowsEditable ? \
+                                             ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | \
+                                             ImGuiWindowFlags_NoCollapse \
+                                             : \
+                                             ImGuiWindowFlags_None))
+
 #define CONTROL_CHANGE (status >= 0xB0 && status <= 0xBF)
 #define NOTE_ON        (status >= 0x90 && status <= 0x9F)
 #define NOTE_OFF       (status >= 0x80 && status <= 0x8F)
@@ -68,7 +73,6 @@ static int windowOpacity = 100;
 static int windowsEditable = 0;
 
 static int smallLayout = 0;
-
 
 static int alwaysontop = 1;
 
@@ -404,9 +408,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             }
 
             static bool showStyleEditor = false;
-            if (ImGui::Button("Theme editor")) {
+            if (ImGui::Button((!showStyleEditor ? "Open theme editor" : "Close theme editor")))
                 showStyleEditor = !showStyleEditor;
-            }
+            
 
             const char* layouts[] = { "Small", "Tall" };
             static const char* current_item = (smallLayout?"Small":"Tall");

@@ -27,8 +27,10 @@ void Piano::draw(bool *show, bool windowsEditable, ImU32 noteColor) {
 
     ImU32 Black = IM_COL32(0, 0, 0, 255);
     ImU32 White = IM_COL32(255, 255, 255, 255);
-    ImGui::Begin("Keyboard", NULL, ImGuiWindowFlags_NoCollapse |
+
+    ImGui::Begin("Keyboard", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus |
                                    (!windowsEditable ? ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize : ImGuiWindowFlags_None));
+
     ImDrawList *draw_list = ImGui::GetWindowDrawList();
     ImVec2 p = ImGui::GetCursorScreenPos();
     int width = 8; // editable
