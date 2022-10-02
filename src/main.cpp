@@ -628,17 +628,27 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 void pollCallback(PmTimestamp timestamp, uint8_t status, PmMessage Data1, PmMessage Data2) {
     logger.AddLog("Event status: %d, Data1: %04X, Data2: %04X\n", status, Data1, Data2);
 
+    if (!enableOutput) {
+        if (NOTE_ON)
+            piano.down(Data1, Data2);
+        else if (NOTE_OFF) {
+            piano.up(Data1);
+        }
+        return;
+    }
 
     char desiredKey = 'x';
     char keyLocation = 'm';
 
     if (NOTE_ON || NOTE_OFF) {
 
-        if (!enableOutput) return;
-
         if (Data1 > 0 && Data1 < 36) {
             desiredKey = lowNotes[abs((int)Data1 - 35)];
             keyLocation = 'l';
+            if (!eightyeightkey) {
+                logger.AddLog("Low note %c skipped\n", desiredKey);
+                return;
+            }
         }
         // Okay
         else if (Data1 >= 36 && Data1 <= 96) {
@@ -649,15 +659,14 @@ void pollCallback(PmTimestamp timestamp, uint8_t status, PmMessage Data1, PmMess
         else if (Data1 > 96 && Data1 < 122) {
             desiredKey = highNotes[abs((int)Data1 - 97)];
             keyLocation = 'h';
+            if (!eightyeightkey) {
+                logger.AddLog("High note %c skipped\n", desiredKey);
+                return;
+            }
         }
         else {
             logger.AddLog("Could not find key %d\n", Data1);
         }
-    }
-
-    if ((keyLocation == 'h' || keyLocation == 'l') && !eightyeightkey) {
-        logger.AddLog("88-key note %c skipped\n", desiredKey);
-        return;
     }
 
     if CONTROL_CHANGE{ //      http://midi.teragonaudio.com/tech/midispec/ctllist.htm  -   Control Change
@@ -681,51 +690,47 @@ void pollCallback(PmTimestamp timestamp, uint8_t status, PmMessage Data1, PmMess
         }
     }
 
-        if NOTE_ON{  // NoteOn
-            piano.down(Data1, Data2);
+    if NOTE_ON{  // NoteOn
+        piano.down(Data1, Data2);
 
-            if (!enableOutput) return;
-
-            if (Data2 == 0) {
-                dyn_sendKeyUp(desiredKey, keyLocation);
-                return;
-            }
-
-            if (velocity == true) {
-                static char prevVelocity = 'X'; // init to somebs
-                char velocity = findVelocity(Data2);
-                if (prevVelocity == velocity) {
-                    logger.AddLog("Same velocity, skipping ");
-                }
-                logger.AddLog("Velocity: %c\n", velocity);
-                dyn_setVelocity(velocity);
-                prevVelocity = velocity;
-            }
-            else {
-                logger.AddLog("Skipping velocity: off\n");
-            }
-
-            if (keyLocation == 'm')
-            {
-                dyn_sendKeyUp(desiredKey, 'm'); // last ditch effort?
-                dyn_sendKeyDown(desiredKey);
-            }
-            else {
-                dyn_sendOutOfRangeKey(desiredKey);
-            }
-
-            logger.AddLog("Note %c, location: %c\n", desiredKey, keyLocation);
+        if (Data2 == 0) {
+            dyn_sendKeyUp(desiredKey, keyLocation);
             return;
-
         }
-            if NOTE_OFF{  // NoteOff
-                piano.up(Data1);
 
-                if (!enableOutput) return;
-
-                logger.AddLog("Releasing %c\n", desiredKey);
-                dyn_sendKeyUp(desiredKey, keyLocation);
-                return;
+        if (velocity == true) {
+            static char prevVelocity = 'X'; // init to somebs
+            char velocity = findVelocity(Data2);
+            if (prevVelocity == velocity) {
+                logger.AddLog("Same velocity, skipping ");
             }
-        logger.AddLog("%s: status: %x, %d, %d\n", timestampString(timestamp).c_str(), status, Data1, Data2);
+            logger.AddLog("Velocity: %c\n", velocity);
+            dyn_setVelocity(velocity);
+            prevVelocity = velocity;
+        }
+        else {
+            logger.AddLog("Skipping velocity: off\n");
+        }
+
+        if (keyLocation == 'm')
+        {
+            dyn_sendKeyUp(desiredKey, 'm'); // last ditch effort?
+            dyn_sendKeyDown(desiredKey);
+        }
+        else {
+            dyn_sendOutOfRangeKey(desiredKey);
+        }
+
+        logger.AddLog("Note %c, location: %c\n", desiredKey, keyLocation);
+        return;
+
+    }
+    if NOTE_OFF{  // NoteOff
+        piano.up(Data1);
+
+        logger.AddLog("Releasing %c\n", desiredKey);
+        dyn_sendKeyUp(desiredKey, keyLocation);
+        return;
+    }
+    logger.AddLog("%s: status: %x, %d, %d\n", timestampString(timestamp).c_str(), status, Data1, Data2);
 }
