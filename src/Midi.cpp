@@ -7,13 +7,6 @@
 
 #include "Midi.h"
 
-#include "imgui.h"
-#include "imgui_internal.h"
-#include "imgui_impl_sdl.h"
-#include "imgui_impl_opengl3.h"
-
-#include <SDL.h>
-
 template<typename T>
 void must(T err) {
     if (err != 0) {
