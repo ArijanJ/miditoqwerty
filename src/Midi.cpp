@@ -7,12 +7,31 @@
 
 #include "Midi.h"
 
+#include "imgui.h"
+#include "imgui_internal.h"
+#include "imgui_impl_sdl.h"
+#include "imgui_impl_opengl3.h"
+
+#include <SDL.h>
+
 template<typename T>
 void must(T err) {
     if (err != 0) {
-        std::cout << "Error: " << Pm_GetErrorText(static_cast<PmError>(err));
-        MessageBox(NULL, "Fatal error: ^", Pm_GetErrorText(static_cast<PmError>(err)), MB_OK);
-        printf("Fatal error occured: %s", Pm_GetErrorText(static_cast<PmError>(err)));
+        std::string errorText = Pm_GetErrorText(static_cast<PmError>(err));
+        std::string errorTip = "";//NULL;
+
+        if (errorText == "PortMidi: Bad pointer")
+            errorTip = "Error: Your MIDI input port couldn't be found.";
+        else if (errorText == "PortMidi: Host error")
+            errorTip = "Error: Your MIDI input port is being used by another program.";
+        else
+        {
+            errorTip = "Error: " + errorText;
+        }
+
+        printf("Error occurred: %s", errorTip.c_str());
+        MessageBox(NULL, errorTip.c_str(), errorText.c_str(), MB_OK);
+
         std::exit(1);
     }
 }
