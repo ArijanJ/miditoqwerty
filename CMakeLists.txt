@@ -41,6 +41,7 @@ add_executable(miditoqwerty
     WIN32
 	src/main.cpp
 	src/Audio.cpp src/inpututils.cpp src/Log.cpp src/Midi.cpp src/Piano.cpp src/settings.cpp src/themes.cpp src/util.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/res/resource.rc
 )
 target_include_directories(miditoqwerty PRIVATE src imgui imgui/backends)
 # target_link_libraries(miditoqwerty fmt)
