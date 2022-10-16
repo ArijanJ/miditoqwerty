@@ -5,6 +5,7 @@ unsigned char scanSets[2][26];
 
 std::unordered_map<unsigned char, short> scanSet1Map;
 std::unordered_map<unsigned char, short> scanSet2Map;
+std::unordered_map<unsigned char, short> scanSet3Map;
 
 const int SHIFT_SCAN = getScanCode(VK_SHIFT);
 const int SPACE_SCAN = getScanCode(VK_SPACE);
@@ -104,6 +105,46 @@ void loadScansets() {
 	scanSet2Map['x'] = 0x22;
 	scanSet2Map['y'] = 0x35;
 	scanSet2Map['z'] = 0x1a;
+
+	scanSet3Map['1'] = 2;
+	scanSet3Map['2'] = 3;
+	scanSet3Map['3'] = 4;
+	scanSet3Map['4'] = 5;
+	scanSet3Map['5'] = 6;
+	scanSet3Map['6'] = 7;
+	scanSet3Map['7'] = 8;
+	scanSet3Map['8'] = 9;
+	scanSet3Map['9'] = 10;
+	scanSet3Map['0'] = 11;
+	scanSet3Map[' '] = SPACE_SCAN;
+
+	scanSet3Map['a'] = 3;
+	scanSet3Map['a'] = 30;
+	scanSet3Map['b'] = 48;
+	scanSet3Map['c'] = 46;
+	scanSet3Map['d'] = 32;
+	scanSet3Map['e'] = 18;
+	scanSet3Map['f'] = 33;
+	scanSet3Map['g'] = 34;
+	scanSet3Map['h'] = 35;
+	scanSet3Map['i'] = 23;
+	scanSet3Map['j'] = 36;
+	scanSet3Map['k'] = 37;
+	scanSet3Map['l'] = 38;
+	scanSet3Map['m'] = 50;
+	scanSet3Map['n'] = 49;
+	scanSet3Map['o'] = 24;
+	scanSet3Map['p'] = 25;
+	scanSet3Map['q'] = 16;
+	scanSet3Map['r'] = 19;
+	scanSet3Map['s'] = 31;
+	scanSet3Map['t'] = 20;
+	scanSet3Map['u'] = 22;
+	scanSet3Map['v'] = 47;
+	scanSet3Map['w'] = 17;
+	scanSet3Map['x'] = 45;
+	scanSet3Map['y'] = 44;
+	scanSet3Map['z'] = 21;
 }
 
 HKL getLayout() {
@@ -229,7 +270,21 @@ void setVelocity(char c) {
 
 // Returns the scan code in the chosen scanset
 unsigned int qwerty_getScanCodeChar(char c) {
-	return (scanSetChoice ? scanSet2Map[c] : scanSet1Map[c]);
+	switch (scanSetChoice) {
+	case 0:
+		return scanSet1Map[c];
+		break;
+	case 1:
+		return scanSet2Map[c];
+		break;
+	case 2:
+		return scanSet3Map[c];
+		break;
+	default:
+		puts("There was an error while choosing scansets\n");
+		return scanSet1Map[c];
+		break;
+	}
 }
 
 void qwerty_sendKeyDown(char c) {

@@ -113,6 +113,8 @@ void setEmulatorFunctions() {
             scanSetChoice = 0;
         else if (qwertyEmulator == 2)
             scanSetChoice = 1;
+        else if (qwertyEmulator == 3)
+            scanSetChoice = 2;
     }
 
     // ..?
@@ -504,22 +506,33 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
                     qwertyEmulator = 0;
                     setEmulatorFunctions();
                 }
-                    if (ImGui::IsItemHovered())
+                if (ImGui::IsItemHovered())
                         ImGui::SetTooltip("Consults Windows and your keyboard layout,\nuseful for playing outside of Roblox");
+
                 if (ImGui::Selectable("Set 1")) {
                     qwertyEmulatorMode = "Set 1";
                     qwertyEmulator = 1;
                     setEmulatorFunctions();
                 }
-                    if (ImGui::IsItemHovered())
+                if (ImGui::IsItemHovered())
                         ImGui::SetTooltip("This should be your go-to setting for Roblox");
+
                 if (ImGui::Selectable("Set 2")) {
                     qwertyEmulatorMode = "Set 2";
                     qwertyEmulator = 2;
                     setEmulatorFunctions();
                 }
-                    if (ImGui::IsItemHovered())
+                if (ImGui::IsItemHovered())
                         ImGui::SetTooltip("Use this if your keyboard doesn't\nproperly support Set 1");
+
+                if (ImGui::Selectable("QWERTZ")) {
+                    qwertyEmulatorMode = "QWERTZ";
+                    qwertyEmulator = 3;
+                    setEmulatorFunctions();
+                }
+                if (ImGui::IsItemHovered())
+                    ImGui::SetTooltip("This is like Set 1, but swaps Y with Z");
+
                 ImGui::EndCombo();
             }
             if (ImGui::IsItemHovered()) {
