@@ -12,6 +12,19 @@
 
 extern PmTimestamp lastNotePlayed;
 
+struct MidiDevice {
+    PmDeviceID id;
+    int input = 0;
+    int output = 0;
+    int opened = 0;
+    int isdefault = 0;
+    std::string name;
+};
+
+namespace MidiUtils {
+    std::vector<MidiDevice> GetDevices();
+}
+
 class Midi {
 public:
     PmDeviceID deviceID;
@@ -24,8 +37,7 @@ private:
 public:
     void InitWrapper();
     void poll(std::function<void(PmTimestamp, uint8_t, PmMessage, PmMessage)> callback, bool debug = false);
-    Midi(PmDeviceID passedID = -1); //constructor
-
+    //Midi(PmDeviceID passedID = -1); //constructor
 };
 
 

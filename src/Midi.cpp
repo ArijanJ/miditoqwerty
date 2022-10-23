@@ -29,6 +29,31 @@ void must(T err) {
     }
 }
 
+std::vector<MidiDevice> MidiUtils::GetDevices() {
+    std::vector<MidiDevice> devices;
+    auto did = Pm_GetDefaultInputDeviceID();
+    int count = Pm_CountDevices();
+    for (int id = 0; id < count; id++) {
+        auto di = Pm_GetDeviceInfo(id);
+
+        std::cout << di->interf << "/" << di->name
+            << ", input: " << di->input
+            << ", output: " << di->output
+            << ", opened: " << di->opened;
+
+        MidiDevice dev;
+        if (id == did) {
+            std::cout << " (DEFAULT)";
+            dev.isdefault = true;
+        }
+        std::cout << std::endl;
+
+        dev = { .id = id, .input = di->input, .output = di->output, .opened = di->opened, .name = di->name };
+        devices.push_back(dev);
+    }
+    return devices;
+}
+
 PmDeviceID init() {
     must(Pm_Initialize());
     Pt_Start(1, nullptr, nullptr);
@@ -60,21 +85,22 @@ void Midi::InitWrapper() {
 }
 
 void Midi::shutdown(PortMidiStream *stream) {
-    must(Pm_Close(stream));
-    must(Pt_Stop());
+    Pm_Close(stream); // removed must(x) from here cause
+    Pt_Stop();
 }
 
-
-Midi::Midi(PmDeviceID passedID) {
-    deviceID = init(); // this gets default
-    if (passedID >= 0) deviceID = passedID; // if we got passed an ID
-    
-    stream = nullptr;
-    if (deviceID >= 0) {
-        must(Pm_OpenInput(&stream, deviceID, nullptr, 1024, nullptr, nullptr));
-    }
-
-}
+//Midi::Midi(PmDeviceID passedID) {
+//    if (passedID == -1) { return; }
+//
+//    deviceID = init(); // this gets default
+//    if (passedID >= 0) deviceID = passedID; // if we got passed an ID
+//    
+//    stream = nullptr;
+//    if (deviceID >= 0) {
+//        must(Pm_OpenInput(&stream, deviceID, nullptr, 1024, nullptr, nullptr));
+//    }
+//
+//}
 
 void Midi::poll(std::function<void(PmTimestamp, uint8_t, PmMessage, PmMessage)> callback, bool debug) {
     PmError err = Pm_Poll(stream);
