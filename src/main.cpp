@@ -90,9 +90,7 @@ SDL_Window* window;
 SettingsHandler settingsHandler;
 
 Piano piano;
-
 Midi midi;
-
 PmTimestamp lastNotePlayed = 0;
 Audio audio;
 
@@ -157,8 +155,7 @@ void resetSettings() {
     settingsHandler.DumpSettings();
 }
 
-void pollCallback(PmTimestamp timestamp, uint8_t status, PmMessage Data1, PmMessage Data2); // forwards
-void AdvanceImGuiFrame();
+void pollCallback(PmTimestamp timestamp, uint8_t status, PmMessage Data1, PmMessage Data2); // forward
 
 // Main code
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd) {
@@ -225,7 +222,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
     io.IniFilename = NULL; // Manual setting with LoadIniFileXXX
-    ImGui::LoadIniSettingsFromDisk((smallLayout ? "layout_small.ini" : "layout_tall.ini"));
+    ImGui::LoadIniSettingsFromDisk((smallLayout?"layout_small.ini" : "layout_tall.ini"));
 
     std::string initializedFont;
 
@@ -282,9 +279,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     // Some settings need to be applied before the main loop because they rely on immediate mode paradigm
     refreshSettings();
-    
-    int selectedDevice = -1;
-     
+
+    // Our state
     //Settings settings;
     bool show_midi_window = true;
     bool show_piano_window = true;
@@ -333,84 +329,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplSDL2_NewFrame(window);
         ImGui::NewFrame();
-
-        if (selectedDevice == -1) {
-            const ImGuiViewport* viewport = ImGui::GetMainViewport();
-            ImGui::SetNextWindowPos(viewport->WorkPos);
-            ImGui::SetNextWindowSize(viewport->WorkSize);
-
-            //ImFont* pcurrfont = ImGui::GetFont();
-            //ImFont bigmode = ImFont(*pcurrfont);
-            //bigmode.Scale = 1.5f;
-            //ImGui::PushFont(&bigmode);
-
-            ImGui::Begin("Input selection", NULL, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
-            ImGui::SetNextWindowPos(viewport->WorkPos);
-            ImGui::SetNextWindowSize(viewport->WorkSize);
-
-            static int currindex = 0;
-            ImGui::SetNextItemWidth(viewport->WorkSize.x);
-            ImGui::BeginListBox("###input", {-1, -1});
-
-            static std::vector<MidiDevice> devices = MidiUtils::GetDevices();
-
-            if (devices.size() < 1) {
-                ImGui::Selectable("You don't seem to have any MIDI devices");
-                continue;
-            }
-
-            static bool loaded = false;
-            int ninputs = 0;
-
-            for (auto& device : devices)
-                if (device.input)
-                    ninputs++;
-
-            if (ninputs == 1) {
-                for (auto& device : devices) {
-                    if (device.input) {
-                        selectedDevice = midi.deviceID = device.id;
-                        midi.InitWrapper();
-                        loaded = true;
-                        logger.AddLog("Opening the only MIDI input");
-                    }
-                }
-            }
-
-            if (loaded == true) continue;
-
-            for (const MidiDevice &device : devices) {
-
-                std::string tooltip = "";
-
-                if (!device.input) { // Color them red or something and add a hint to why they're not okay
-                    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-                    tooltip = "This isn't an input MIDI device.";
-                }
-
-                std::string displayString = device.name;
-                if (device.isdefault) displayString += " [default]";
-                if (ImGui::Selectable(displayString.c_str()) && tooltip == "") // if all is good
-                {
-                    selectedDevice = midi.deviceID = device.id;
-                    midi.InitWrapper(); //
-                    //ImGui::PopFont();
-                }
-                if (ImGui::IsItemHovered() && tooltip != "")
-                    ImGui::SetTooltip(tooltip.c_str());
-                ImGui::PopStyleVar();
-
-            }
-
-            ImGui::EndListBox();
-
-            ImGui::End();
-
-            // Rendering
-            AdvanceImGuiFrame();
-            continue;
-        }
-
         if (show_midi_window) {
             ImGui::Begin("Midi", NULL, POSSIBLYEDITABLE);
             std::ostringstream os;
@@ -560,6 +478,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
    
             ImGui::Checkbox("Velocity", (bool*)& velocity);
 
+            static bool foundDevice = false;
+            auto did = Pm_GetDefaultInputDeviceID();
+            if (did < 0) {
+                std::cout << "Couldn't find any MIDI devices for input."
+                    << std::endl;
+                return did;
+            }
+            else if(!foundDevice) {
+                logger.AddLog("Opened MIDI device %s\n", Pm_GetDeviceInfo(did)->name);
+                foundDevice = true;
+            }
+
             ImGui::Text("QWERTY Emulator");
             static const char* qwertyEmulatorMode;
             static bool didEmuTextInit = false;
@@ -610,7 +540,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             }
 
             ImGui::Text("MIDI Input");
-            static const char* selectedDeviceName = Pm_GetDeviceInfo(selectedDevice)->name;
+            PmDeviceID selectedDevice = did;
+            static const char* selectedDeviceName = Pm_GetDeviceInfo(did)->name;
             if (ImGui::BeginCombo("Port", selectedDeviceName)) {
                 for (int i = 0; i < Pm_CountDevices() - 1; i++) {
                     const PmDeviceInfo* deviceInfo = Pm_GetDeviceInfo(i);
@@ -664,7 +595,33 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             // Actually call in the regular Log helper (which will Begin() into the same window as we just did)
             logger.Draw("Log", &show_log_window);
         }
-        AdvanceImGuiFrame();
+
+        static bool firstDown = true;
+        static int relOldMousePos[2];
+        if (rightDown) {
+            int x, y;
+            int winx, winy;
+            int sizex, sizey;
+            SDL_GetWindowPosition(window, &winx, &winy);
+            SDL_GetWindowSize(window, &sizex, &sizey);
+            SDL_GetMouseState(&x, &y);
+            x -= sizex / 2;
+            y -= sizey / 2;
+            if (firstDown) {
+                SDL_GetMouseState(&relOldMousePos[0], &relOldMousePos[1]);
+                firstDown = false;
+            }
+            //SDL_SetRelativeMouseMode(SDL_TRUE);
+            SDL_SetWindowPosition(window, winx + x, winy + y);
+        }
+
+        // Rendering
+        ImGui::Render();
+        glViewport(0, 0, (int) io.DisplaySize.x, (int) io.DisplaySize.y);
+        glClearColor(gBackgroundColor.x, gBackgroundColor.y, gBackgroundColor.z, gBackgroundColor.w); // w was here
+        glClear(GL_COLOR_BUFFER_BIT);
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        SDL_GL_SwapWindow(window);
     }
 
     settingsHandler.DumpSettings();
@@ -679,38 +636,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     SDL_Quit();
 
     return 0;
-}
-
-void AdvanceImGuiFrame() {
-    ImGuiIO& io = ImGui::GetIO();
-
-    // Move window with right click
-    static bool firstDown = true;
-    static int relOldMousePos[2];
-    if (rightDown) {
-        int x, y;
-        int winx, winy;
-        int sizex, sizey;
-        SDL_GetWindowPosition(window, &winx, &winy);
-        SDL_GetWindowSize(window, &sizex, &sizey);
-        SDL_GetMouseState(&x, &y);
-        x -= sizex / 2;
-        y -= sizey / 2;
-        if (firstDown) {
-            SDL_GetMouseState(&relOldMousePos[0], &relOldMousePos[1]);
-            firstDown = false;
-        }
-        //SDL_SetRelativeMouseMode(SDL_TRUE);
-        SDL_SetWindowPosition(window, winx + x, winy + y);
-    }
-
-    // Rendering
-    ImGui::Render();
-    glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
-    glClearColor(gBackgroundColor.x, gBackgroundColor.y, gBackgroundColor.z, gBackgroundColor.w); // w was here
-    glClear(GL_COLOR_BUFFER_BIT);
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    SDL_GL_SwapWindow(window);
 }
 
 void pollCallback(PmTimestamp timestamp, uint8_t status, PmMessage Data1, PmMessage Data2) {
