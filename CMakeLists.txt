@@ -30,9 +30,8 @@ include_directories(
     ${PORTMIDI_INCLUDE_DIR}
     ${CMAKE_SOURCE_DIR}/imgui
     ${CMAKE_SOURCE_DIR}/imgui/backends
+	${CMAKE_SOURCE_DIR}/src
     )
-
-# add_subdirectory(fmt)
 
 add_library (imgui 
     imgui/backends/imgui_impl_sdl.cpp imgui/backends/imgui_impl_opengl3.cpp imgui/imgui.cpp imgui/imgui_draw.cpp imgui/imgui_widgets.cpp imgui/imgui_tables.cpp)
@@ -41,6 +40,7 @@ add_executable(miditoqwerty
     WIN32
 	src/main.cpp
 	src/Audio.cpp src/inpututils.cpp src/Log.cpp src/Midi.cpp src/Piano.cpp src/settings.cpp src/themes.cpp src/util.cpp
+	src/Midi.h src/themes.h src/util.h src/settings.h src/porttime.h src/resource.h src/inpututils.h src/Piano.h src/Qwerty.h src/Log.h src/Audio.h
 	${CMAKE_CURRENT_SOURCE_DIR}/res/resource.rc
 )
 target_include_directories(miditoqwerty PRIVATE src imgui imgui/backends)
