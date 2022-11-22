@@ -25,6 +25,9 @@
 #include "GL/gl3w.h"            // Initialize with gl3wInit()
 #include <sstream>
 
+#include <thread>
+#include <future>
+
 #define POSSIBLYEDITABLE (ImGuiWindowFlags_NoBringToFrontOnFocus | (!windowsEditable ? \
                                              ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | \
                                              ImGuiWindowFlags_NoCollapse \
@@ -294,6 +297,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     
     // only global used ImVec4 clear_color = gBackgroundColor;//ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
 
+    // Set up thread
+    auto thr = [](std::future<void> futureObj) {
+        while (futureObj.wait_for(std::chrono::milliseconds(1)) == std::future_status::timeout) {
+            midi.poll(pollCallback, true);
+        }
+        printf("Finished MIDI thread\n");
+    };
+    std::promise<void> exitSignal;
+    std::future<void> futureObj = exitSignal.get_future();
+    std::thread midithread(thr, std::move(futureObj));
+
     // Main loop
     bool done = false;
     while (!done) {
@@ -453,8 +467,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             } else { ImGui::Text(""); }
             ImGui::End();
         }
-
-        midi.poll(pollCallback, true);
 
         if (rainbowMode) { /*Do all the rainbow stuff in one block*/
             static int r = 0; static int g = 0; static int b = 0;
@@ -670,6 +682,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     settingsHandler.DumpSettings();
 
     // Cleanup
+    exitSignal.set_value();;
+    midithread.join();
+    //std::this_thread::sleep_for(std::chrono::milliseconds(100)); //safety net
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
@@ -765,12 +780,12 @@ void pollCallback(PmTimestamp timestamp, uint8_t status, PmMessage Data1, PmMess
                 return;
             }
             if (Data2 >= sustainCutoff && !sustainOn) {
-                dyn_sendKeyDown(' ');
+                std::async(std::launch::async, dyn_sendKeyDown, ' ');// dyn_sendKeyDown(' ');
                 sustainOn = true;
                 logger.AddLog("Sustain down");
             }
             else if (Data2 < sustainCutoff && sustainOn) {
-                dyn_sendKeyUp(' ', 'm');
+                std::async(std::launch::async, dyn_sendKeyUp, ' ', 'm');//dyn_sendKeyUp(' ', 'm');
                 sustainOn = false;
                 logger.AddLog("Sustain up");
             }
@@ -782,7 +797,7 @@ void pollCallback(PmTimestamp timestamp, uint8_t status, PmMessage Data1, PmMess
         piano.down(Data1, Data2);
 
         if (Data2 == 0) {
-            dyn_sendKeyUp(desiredKey, keyLocation);
+            std::async(std::launch::async, dyn_sendKeyUp, desiredKey, keyLocation);//dyn_sendKeyUp(desiredKey, keyLocation);
             return;
         }
 
@@ -793,7 +808,7 @@ void pollCallback(PmTimestamp timestamp, uint8_t status, PmMessage Data1, PmMess
                 logger.AddLog("Same velocity, skipping ");
             }
             logger.AddLog("Velocity: %c\n", velocity);
-            dyn_setVelocity(velocity);
+            std::async(std::launch::async, dyn_setVelocity, velocity);//dyn_setVelocity(velocity);
             prevVelocity = velocity;
         }
         else {
@@ -802,11 +817,11 @@ void pollCallback(PmTimestamp timestamp, uint8_t status, PmMessage Data1, PmMess
 
         if (keyLocation == 'm')
         {
-            dyn_sendKeyUp(desiredKey, 'm'); // last ditch effort?
-            dyn_sendKeyDown(desiredKey);
+            std::async(std::launch::async, dyn_sendKeyUp, desiredKey, 'm');//dyn_sendKeyUp(desiredKey, 'm'); // last ditch effort?
+            std::async(std::launch::async, dyn_sendKeyDown, desiredKey);//dyn_sendKeyDown(desiredKey);
         }
         else {
-            dyn_sendOutOfRangeKey(desiredKey);
+            std::async(std::launch::async, dyn_sendOutOfRangeKey, desiredKey);//dyn_sendOutOfRangeKey(desiredKey);
         }
 
         logger.AddLog("Note %c, location: %c\n", desiredKey, keyLocation);
@@ -817,7 +832,7 @@ void pollCallback(PmTimestamp timestamp, uint8_t status, PmMessage Data1, PmMess
         piano.up(Data1);
 
         logger.AddLog("Releasing %c\n", desiredKey);
-        dyn_sendKeyUp(desiredKey, keyLocation);
+        std::async(std::launch::async, dyn_sendKeyUp, desiredKey, keyLocation);//dyn_sendKeyUp(desiredKey, keyLocation);
         return;
     }
     logger.AddLog("%s: status: %x, %d, %d\n", timestampString(timestamp).c_str(), status, Data1, Data2);
