@@ -183,11 +183,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     settingsHandler.AddSetting("Log stuff", &logStuff);
     settingsHandler.AddSetting("QWERTY emulation", &qwertyEmulator);
 
+    // before the midithread (wow this works great)
+    if (midi.deviceID < 0) {
+        std::exit(2);
+    }
+
     fflush(stdoutNew);
 
     // Setup SDL
-    // (Some versions of SDL before <2.0.10 appears to have performance/stalling issues on a minority of Windows systems,
-    // depending on whether SDL_INIT_GAMECONTROLLER is enabled or disabled.. updating to latest version of SDL is recommended!)
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0) {
         printf("Error: %s\n", SDL_GetError());
         return -1;
@@ -300,16 +303,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         }
         printf("Finished MIDI thread\n");
     };
-    std::promise<void> exitSignal;
-    std::future<void> futureObj = exitSignal.get_future();
+
+    std::promise<void> midiThreadExitSignal;
+    std::future<void> futureObj = midiThreadExitSignal.get_future();
     std::thread midithread(thr, std::move(futureObj));
 
     // Main loop
     bool done = false;
     while (!done) {
-        // Poll and handle events (inputs, window resize, etc.)
-        // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
-        // - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application.
         // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application.
         // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
         SDL_Event event;
@@ -358,7 +359,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             } else {
                 ImGui::Text("");
             }
-            std::string chord = midiChordString(current_notes);
             ImGui::Text("Qwerty: ");
             ImGui::SameLine();
             if (!playing.empty()) {
@@ -639,8 +639,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     settingsHandler.DumpSettings();
 
     // Cleanup
-    exitSignal.set_value();;
-    midithread.join();
+    midiThreadExitSignal.set_value();;
+    midithread.join(); // Wait for kil
     //std::this_thread::sleep_for(std::chrono::milliseconds(100)); //safety net
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();

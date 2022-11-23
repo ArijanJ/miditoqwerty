@@ -18,7 +18,7 @@ int velocityList[] = {
 100, 104, 108, 112,
 116, 120, 124, 127 };
 
-char findVelocity(int required) {
+constexpr char findVelocity(int required) {
 	if (required <= 4)
 		return '1';
 	for (int index = 0; index < (sizeof(velocityList) / sizeof(int)) - 1; index++) {

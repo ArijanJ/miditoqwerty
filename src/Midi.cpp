@@ -25,7 +25,7 @@ void must(T err) {
         printf("Error occurred: %s", errorTip.c_str());
         MessageBox(NULL, errorTip.c_str(), errorText.c_str(), MB_OK);
 
-        std::exit(1);
+        std::exit(1);//horrible
     }
 }
 
