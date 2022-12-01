@@ -49,5 +49,5 @@ target_include_directories(miditoqwerty PRIVATE src imgui imgui/backends)
 # For g++ < 9
 #target_link_libraries(miditoqwerty ${PORTMIDI_LIBRARY} ${SDL2_DIR}/lib/x64/SDL2.lib imgui stdc++fs gl3w ${CMAKE_DL_LIBS})
 
-For MSVC
+# For MSVC
 target_link_libraries(miditoqwerty ${PORTMIDI_LIBRARY} ${SDL2_DIR}/lib/x64/SDL2.lib imgui gl3w ${CMAKE_DL_LIBS})
