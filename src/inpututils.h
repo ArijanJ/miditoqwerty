@@ -13,8 +13,6 @@ void loadScansets();
 
 HKL getLayout();
 
-void setLayout(HKL l);
-
 void setupInput(INPUT input[], int size, int code1, int code2, bool advanced);
 
 unsigned int getScanCode(int code);

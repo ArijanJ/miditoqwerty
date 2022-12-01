@@ -13,7 +13,6 @@
 
 #include "themes.h"
 
-#include "Audio.h"
 #include "Log.h"
 #include "Piano.h"
 #include "Midi.h"
@@ -54,7 +53,6 @@ int logStuff;
 bool resetting = false;
 
 bool sustainOn = false;
-bool ctrlDown = false;
 bool rightDown = false;
 
 int scanSetChoice = 0;
@@ -96,7 +94,6 @@ SettingsHandler settingsHandler;
 Piano piano;
 Midi midi;
 PmTimestamp lastNotePlayed = 0;
-Audio audio;
 
 Log logger;
 
@@ -192,7 +189,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     fflush(stdoutNew);
 
     // Setup SDL
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0) {
         printf("Error: %s\n", SDL_GetError());
         return -1;
     }
@@ -288,14 +285,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     refreshSettings();
 
     // Our state
-    //Settings settings;
     bool show_midi_window = true;
     bool show_piano_window = true;
     bool show_log_window = true;
     bool show_settings = true;
     bool rainbowMode = false;
-    
-    // only global used ImVec4 clear_color = gBackgroundColor;//ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
 
     // Set up thread
     auto thr = [](std::future<void> futureObj) {
@@ -323,9 +317,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
                 event.window.windowID == SDL_GetWindowID(window))
                 done = true;
             if (event.type == SDL_KEYDOWN) {
-                if (event.key.keysym.scancode == SDL_SCANCODE_LCTRL)
-                    ctrlDown = true;
-                else if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE)
+                if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE)
                     done = true;
             }
 
@@ -426,11 +418,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             if (ImGui::Button((!showStyleEditor ? "Open theme editor" : "Close theme editor")))
                 showStyleEditor = !showStyleEditor;
             
-
             const char* layouts[] = { "Small", "Tall" };
             static const char* current_item = (smallLayout?"Small":"Tall");
-
-            //ImGui::GetStyle().
 
             ImGui::Text("Layout");
             ImGui::PushItemWidth(ImGui::GetFontSize() * 6); // 6 chars - Small, Tall = 5, 4

@@ -39,8 +39,8 @@ add_library (imgui
 add_executable(miditoqwerty
     WIN32
 	src/main.cpp
-	src/Audio.cpp src/inpututils.cpp src/Log.cpp src/Midi.cpp src/Piano.cpp src/settings.cpp src/themes.cpp src/util.cpp imgui/backends/imgui_impl_sdl.cpp
-	src/Midi.h src/themes.h src/util.h src/settings.h src/porttime.h src/resource.h src/inpututils.h src/Piano.h src/Qwerty.h src/Log.h src/Audio.h
+	src/inpututils.cpp src/Log.cpp src/Midi.cpp src/Piano.cpp src/settings.cpp src/themes.cpp src/util.cpp imgui/backends/imgui_impl_sdl.cpp
+	src/Midi.h src/themes.h src/util.h src/settings.h src/porttime.h src/resource.h src/inpututils.h src/Piano.h src/Qwerty.h src/Log.h
 	${CMAKE_CURRENT_SOURCE_DIR}/res/resource.rc
 )
 target_include_directories(miditoqwerty PRIVATE src imgui imgui/backends)

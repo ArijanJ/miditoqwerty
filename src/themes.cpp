@@ -65,21 +65,18 @@ bool ShowThemeSelector(const char* label, std::string& output) {
 
     bool retval = false;
 
-    static bool value_changed = false;
-
     ImGui::Text("Theme");
     if (ImGui::BeginCombo("##combo", current_item.c_str())) // The second parameter is the label previewed before opening the combo.
     {
-        for (int n = 0; n < themes.size(); n++)
+        for (size_t n = 0; n < themes.size(); n++)
         {
             bool is_selected = (current_item == themes.at(n)); // You can store your selection however you want, outside or inside your objects
-            if (ImGui::Selectable(themes.at(n).c_str(), is_selected))
+            if (ImGui::Selectable(themes.at(n).c_str(), is_selected)){
                 current_item = themes.at(n);
                 output = current_item;
                 LoadTheme("themes/" + current_item + ".theme");
-
-                value_changed = true;
                 retval = true;
+            }
             if (is_selected)
             {
                 ImGui::SetItemDefaultFocus();   // You may set the initial focus when opening the combo (scrolling + for keyboard navigation support)
@@ -137,7 +134,6 @@ void ImGui::ShowStyleEditor(ImGuiStyle* ref)
     // You can pass in a reference ImGuiStyle structure to compare to, revert to and save to
     // (without a reference style pointer, we will use one compared locally as a reference)
     ImGuiStyle& style = ImGui::GetStyle();
-    //pStyle = &style;
     static ImGuiStyle ref_saved_style;
 
     // Default to using internal storage as reference
@@ -152,21 +148,15 @@ void ImGui::ShowStyleEditor(ImGuiStyle* ref)
     
     ImGui::ShowFontSelector("Fonts##Selector");
 
-    //printf("Selected theme %d\n", currentTheme);
     std::string curTheme; // not to be confused with currentTheme
     ShowThemeSelector("Theme", curTheme);
-    ImGui::SameLine();//ImGui::Separator();
+    ImGui::SameLine();
 
             if (ImGui::Button("Save"))
             {
-                /*if (output_dest == 0)
-                    ImGui::LogToClipboard();
-                else*/
                 ImGui::LogToTTY();
                 ImGui::LogText("ImVec4* colors = ImGui::GetStyle().Colors;" IM_NEWLINE);
                 FILE* fp;
-                //std::string destination = "themes/" + currentTheme + ".theme";
-                //currentTheme = destination;
                 if (fopen_s(&fp, currentTheme.c_str(), "w") == 0) {
                     for (int i = 0; i < ImGuiCol_COUNT; i++)
                     {
@@ -184,15 +174,6 @@ void ImGui::ShowStyleEditor(ImGuiStyle* ref)
             static ImGuiTextFilter filter;
             filter.Draw("Filter colors", ImGui::GetFontSize() * 16);
 
-            /*static ImGuiColorEditFlags alpha_flags = 0;
-            if (ImGui::RadioButton("Opaque", alpha_flags == ImGuiColorEditFlags_None)) { alpha_flags = ImGuiColorEditFlags_None; } ImGui::SameLine();
-            if (ImGui::RadioButton("Alpha", alpha_flags == ImGuiColorEditFlags_AlphaPreview)) { alpha_flags = ImGuiColorEditFlags_AlphaPreview; } ImGui::SameLine();
-            if (ImGui::RadioButton("Both", alpha_flags == ImGuiColorEditFlags_AlphaPreviewHalf)) { alpha_flags = ImGuiColorEditFlags_AlphaPreviewHalf; } ImGui::SameLine();*/
-            /*HelpMarker(
-                "In the color list:\n"
-                "Left-click on color square to open color picker,\n"
-                "Right-click to open edit options menu.");*/
-
             ImGui::BeginChild("##colors", ImVec2(0, 0), true, ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_NavFlattened);
             ImGui::PushItemWidth(-160);
             for (int i = 0; i < ImGuiCol_COUNT; i++)
@@ -204,9 +185,6 @@ void ImGui::ShowStyleEditor(ImGuiStyle* ref)
                 ImGui::ColorEdit4("##color", (float*)&style.Colors[i], ImGuiColorEditFlags_NoInputs);
                 if (memcmp(&style.Colors[i], &ref->Colors[i], sizeof(ImVec4)) != 0)
                 {
-                    // Tips: in a real user application, you may want to merge and use an icon font into the main font,
-                    // so instead of "Save"/"Revert" you'd use icons!
-                    // Read the FAQ and docs/FONTS.md about using icon fonts. It's really easy and super convenient!
                     ImGui::SameLine(0.0f, style.ItemInnerSpacing.x); if (ImGui::Button("Save")) { ref->Colors[i] = style.Colors[i]; }
                     ImGui::SameLine(0.0f, style.ItemInnerSpacing.x); if (ImGui::Button("Revert")) { style.Colors[i] = ref->Colors[i]; }
                 }

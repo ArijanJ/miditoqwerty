@@ -164,10 +164,6 @@ char findIndex(char c) {
 	return c;
 }
 
-void setLayout(HKL l) {
-	// Todo? Invasive?
-}
-
 unsigned int getScanCode(int code) {
 	return MapVirtualKeyExA(code, MAPVK_VK_TO_VSC, layout);
 }
