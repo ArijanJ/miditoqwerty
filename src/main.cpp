@@ -3,7 +3,8 @@
 
 #define SDL_MAIN_HANDLED
 #include <SDL.h>
-#undef WinMain // <- because SDL_main has its own main/WinMain
+//#undef WinMain // <- because SDL_main has its own main/WinMain
+//#undef main // <- because SDL_main has its own main/WinMain
 
 #include "imgui.h"
 #include "imgui_internal.h"

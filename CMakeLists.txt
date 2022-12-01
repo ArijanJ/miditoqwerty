@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 project(miditoqwerty)
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 list( APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake )
 
 find_package(SDL2 REQUIRED)
@@ -39,11 +39,15 @@ add_library (imgui
 add_executable(miditoqwerty
     WIN32
 	src/main.cpp
-	src/Audio.cpp src/inpututils.cpp src/Log.cpp src/Midi.cpp src/Piano.cpp src/settings.cpp src/themes.cpp src/util.cpp
+	src/Audio.cpp src/inpututils.cpp src/Log.cpp src/Midi.cpp src/Piano.cpp src/settings.cpp src/themes.cpp src/util.cpp imgui/backends/imgui_impl_sdl.cpp
 	src/Midi.h src/themes.h src/util.h src/settings.h src/porttime.h src/resource.h src/inpututils.h src/Piano.h src/Qwerty.h src/Log.h src/Audio.h
 	${CMAKE_CURRENT_SOURCE_DIR}/res/resource.rc
 )
 target_include_directories(miditoqwerty PRIVATE src imgui imgui/backends)
 # target_link_libraries(miditoqwerty fmt)
 
-target_link_libraries(miditoqwerty ${PORTMIDI_LIBRARY} ${SDL2_LIBRARIES} imgui gl3w ${CMAKE_DL_LIBS})
+# For g++ < 9
+#target_link_libraries(miditoqwerty ${PORTMIDI_LIBRARY} ${SDL2_DIR}/lib/x64/SDL2.lib imgui stdc++fs gl3w ${CMAKE_DL_LIBS})
+
+For MSVC
+target_link_libraries(miditoqwerty ${PORTMIDI_LIBRARY} ${SDL2_DIR}/lib/x64/SDL2.lib imgui gl3w ${CMAKE_DL_LIBS})
