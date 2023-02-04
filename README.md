@@ -6,9 +6,9 @@
 ![image_4](https://user-images.githubusercontent.com/56356662/182448262-1aaf1803-e401-4e77-9706-b7f6f4bfa4b1.png)
 
 Libraries used:
-[The wonderful imgui](https://github.com/ocornut/imgui)
-[shric/midi on GitHub](https://github.com/shric/midi)
-[PortMidi](https://github.com/PortMidi/portmidi)
+- [The wonderful imgui](https://github.com/ocornut/imgui)
+- [shric/midi on GitHub](https://github.com/shric/midi)
+- [PortMidi](https://github.com/PortMidi/portmidi)
 
 Themes inspired by:
 [Monkeytype (check it out!)](https://github.com/monkeytypegame/monkeytype)
