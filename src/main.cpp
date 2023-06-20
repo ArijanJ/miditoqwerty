@@ -306,8 +306,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     // Main loop
     bool done = false;
     while (!done) {
-        // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application.
-        // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             ImGui_ImplSDL2_ProcessEvent(&event);
@@ -616,6 +614,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             //SDL_SetRelativeMouseMode(SDL_TRUE);
             SDL_SetWindowPosition(window, winx + x, winy + y);
         }
+        
+        // Limit the FPS to 100
+        // TODO: Rewrite this entire trainwreck of a project
+        SDL_Delay(10);
 
         // Rendering
         ImGui::Render();
@@ -752,3 +754,4 @@ void pollCallback(PmTimestamp timestamp, uint8_t status, PmMessage Data1, PmMess
     }
     logger.AddLog("%s: status: %x, %d, %d\n", timestampString(timestamp).c_str(), status, Data1, Data2);
 }
+
